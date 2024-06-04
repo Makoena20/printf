@@ -1,0 +1,103 @@
+#include "main.h"
+
+/**
+ * _printf - A function that prints its arguments
+ *
+ * @format: The format string
+ *
+ * Return: The number of characters printed
+ */
+int _printf(const char *format, ...)
+{
+    // Handle the format string
+    va_list args;
+    va_start(args, format);
+
+    int len = 0;
+    while (*format)
+    {
+        if (*format == '%')
+        {
+            // Handle the format specifier
+            format++;
+            switch (*format)
+            {
+                case 'c':
+                    {
+                        char c = va_arg(args, int);
+                        write(1, &c, 1);
+                        len++;
+                    }
+                    break;
+                case 's':
+                    {
+                        char *s = va_arg(args, char *);
+                        while (*s)
+                        {
+                            write(1, s, 1);
+                            s++;
+                            len++;
+                        }
+                    }
+                    break;
+                case 'd':
+                case 'i':
+                    {
+                        int i = va_arg(args, int);
+                        if (i < 0)
+                        {
+                            write(1, "-", 1);
+                            i = -i;
+                        }
+                        len += itoa(i, len);
+                    }
+                    break;
+                case 'u':
+                    {
+                        unsigned int ui = va_arg(args, unsigned int);
+                        len += itoa(ui, len);
+                    }
+                    break;
+                case 'o':
+                    {
+                        unsigned int ui = va_arg(args, unsigned int);
+                        len += itoa(ui, len);
+                    }
+                    break;
+                case 'x':
+                case 'X':
+                    {
+                        unsigned int ui = va_arg(args, unsigned int);
+                        len += itoa(ui, len);
+                    }
+                    break;
+                case 'p':
+                    {
+                        void *addr = va_arg(args, void *);
+                        len += itoa((unsigned int)addr, len);
+                    }
+                    break;
+                case '%':
+                    {
+                        write(1, "%", 1);
+                        len++;
+                    }
+                    break;
+                default:
+                    {
+                        write(1, "%", 1);
+                        write(1, *format, 1);
+                        len++;
+                    }
+            }
+        }
+        else
+        {
+            write(1, format, 1);
+            len++;
+        }
+        format++;
+    }
+    va_end(args);
+    return len;
+}
