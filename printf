@@ -1,103 +1,124 @@
-#include "main.h"
+#include <stdio.h>
 
-/**
- * _printf - A function that prints its arguments
- *
- * @format: The format string
- *
- * Return: The number of characters printed
- */
-int _printf(const char *format, ...)
-{
+typedef enum {
+    c, s, percent
+} fmt_t;
+
+void handle_print(char *fmt, va_list args) {
+    fmt_t fmt_types[] = {
+        {'c', print_char}, {'s', print_string}, {'%', print_percent}
+    };
+
     // Handle the format string
-    va_list args;
-    va_start(args, format);
-
-    int len = 0;
-    while (*format)
-    {
-        if (*format == '%')
-        {
-            // Handle the format specifier
-            format++;
-            switch (*format)
-            {
-                case 'c':
-                    {
-                        char c = va_arg(args, int);
-                        write(1, &c, 1);
-                        len++;
-                    }
-                    break;
-                case 's':
-                    {
-                        char *s = va_arg(args, char *);
-                        while (*s)
-                        {
-                            write(1, s, 1);
-                            s++;
-                            len++;
-                        }
-                    }
-                    break;
-                case 'd':
-                case 'i':
-                    {
-                        int i = va_arg(args, int);
-                        if (i < 0)
-                        {
-                            write(1, "-", 1);
-                            i = -i;
-                        }
-                        len += itoa(i, len);
-                    }
-                    break;
-                case 'u':
-                    {
-                        unsigned int ui = va_arg(args, unsigned int);
-                        len += itoa(ui, len);
-                    }
-                    break;
-                case 'o':
-                    {
-                        unsigned int ui = va_arg(args, unsigned int);
-                        len += itoa(ui, len);
-                    }
-                    break;
-                case 'x':
-                case 'X':
-                    {
-                        unsigned int ui = va_arg(args, unsigned int);
-                        len += itoa(ui, len);
-                    }
-                    break;
-                case 'p':
-                    {
-                        void *addr = va_arg(args, void *);
-                        len += itoa((unsigned int)addr, len);
-                    }
-                    break;
-                case '%':
-                    {
-                        write(1, "%", 1);
-                        len++;
-                    }
-                    break;
-                default:
-                    {
-                        write(1, "%", 1);
-                        write(1, *format, 1);
-                        len++;
-                    }
+    while (*fmt) {
+        if (*fmt == '%') {
+            fmt++;
+            if (*fmt == 'c') {
+                print_char(va_arg(args, int));
+            } else if (*fmt == 's') {
+                print_string(va_arg(args, char *));
+            } else if (*fmt == '%') {
+                print_percent();
             }
+        } else {
+            putchar(*fmt);
         }
-        else
-        {
-            write(1, format, 1);
-            len++;
-        }
-        format++;
+        fmt++;
     }
+}
+
+void print_char(int c) {
+    putchar(c);
+}
+
+void print_string(char *s) {
+    while (*s) {
+        putchar(*s);
+        s++;
+    }
+}
+
+void print_percent() {
+    putchar('%');
+}
+
+int main() {
+    va_list args;
+    va_start(args, "Let's print a simple sentence.\n");
+    _printf("Let's print a simple sentence.\n");
     va_end(args);
-    return len;
+
+    va_start(args, 'S');
+    _printf("%c", 'S');
+    va_end(args);
+
+    va_start(args, "A char inside a sentence: %c. Did it work?");
+    _printf("A char inside a sentence: %c. Did it work?", 'F');
+    va_end(args);
+
+    va_start(args, 48);
+    _printf("Let'see if the cast is correctly done: %c. Did it work?\n", 48);
+    va_end(args);
+
+    va_start(args, "This sentence is retrieved from va_args!");
+    _printf("%s", "This sentence is retrieved from va_args!\n");
+    va_end(args);
+
+    va_start(args, "You %s nothing, Jon Snow.");
+    _printf("Complete the sentence: You %s nothing, Jon Snow.\n", "know");
+    va_end(args);
+
+    va_start(args, (char *)0);
+    _printf("Complete the sentence: You %s nothing, Jon Snow.\n", (char *)0);
+    va_end(args);
+
+    va_start(args, 'W', 'i', "some ", "more", 'r', "s", "", "know", 't', ", Jon", '\n');
+    _printf("%c%cth %s%s a%cg%s: Y%sou %s no%ching%s Snow.%c", 'W', 'i', "some ", "more", 'r', "s", "", "know", 't', ", Jon", '\n');
+    va_end(args);
+
+    va_start(args, "%%");
+    _printf("%%");
+    va_end(args);
+
+    va_start(args, "Should print a single percent sign: %%");
+    _printf("Should print a single percent sign: %%\n");
+    va_end(args);
+
+    va_start(args, "Loading . . . 99 Please wait");
+    _printf("%s%c%c%c%s%%%s%c", "Loading ", '.', '.', '.', " 99", " Please wait", '\n');
+    va_end(args);
+
+    va_start(args, "cssccscss");
+    _printf("css%ccs%scscscs", 'T', "Test");
+    va_end(args);
+
+    va_start(args, str);
+    _printf(str);
+    va_end(args);
+
+    va_start(args, str);
+    _printf("man gcc:\n%s", str);
+    va_end(args);
+
+    va_start(args, NULL);
+    _printf(NULL);
+    va_end(args);
+
+    va_start(args, '\0');
+    _printf("%c", '\0');
+    va_end(args);
+
+    va_start(args, "%");
+    _printf("%");
+    va_end(args);
+
+    va_start(args, "%!");
+    _printf("%!\n");
+    va_end(args);
+
+    va_start(args, "%K");
+    _printf("%K\n");
+    va_end(args);
+
+    return 0;
 }
